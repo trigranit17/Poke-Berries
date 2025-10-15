@@ -4,11 +4,29 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchBerryDetail } from "@/utils/api";
 
+// 🧩 Definisikan tipe sesuai struktur data dari PokeAPI
+interface BerryFlavor {
+  flavor: { name: string };
+  potency: number;
+}
+
+interface BerryDetail {
+  name: string;
+  growth_time: number;
+  size: number;
+  max_harvest: number;
+  natural_gift_power: number;
+  flavors: BerryFlavor[];
+  firmness?: { name: string };
+}
+
 export default function Detail() {
   const router = useRouter();
   const params = useParams();
   const name = params?.name as string;
-  const [data, setData] = useState<any | null>(null);
+
+  // 🧠 Gunakan tipe BerryDetail, bukan any
+  const [data, setData] = useState<BerryDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,7 +34,7 @@ export default function Detail() {
     if (!name) return;
     setLoading(true);
     fetchBerryDetail(name)
-      .then((d) => setData(d))
+      .then((d: BerryDetail) => setData(d))
       .catch((err) => setError(String(err)))
       .finally(() => setLoading(false));
   }, [name]);
@@ -41,7 +59,9 @@ export default function Detail() {
           <div className="text-red-600">{error}</div>
         ) : data ? (
           <div>
-            <h2 className="text-2xl font-semibold mb-2">{data.name}</h2>
+            <h2 className="text-2xl font-semibold mb-2 capitalize">
+              {data.name}
+            </h2>
             <ul className="space-y-2">
               <li>
                 <strong>Growth Time:</strong> {data.growth_time}
@@ -58,7 +78,7 @@ export default function Detail() {
               <li>
                 <strong>Flavors:</strong>
                 <ul className="ml-4 list-disc">
-                  {data.flavors.map((f: any) => (
+                  {data.flavors.map((f) => (
                     <li key={f.flavor.name}>
                       {f.flavor.name}: potency {f.potency}
                     </li>
@@ -66,7 +86,7 @@ export default function Detail() {
                 </ul>
               </li>
               <li>
-                <strong>Firmness:</strong> {data.firmness?.name}
+                <strong>Firmness:</strong> {data.firmness?.name ?? "-"}
               </li>
             </ul>
           </div>
